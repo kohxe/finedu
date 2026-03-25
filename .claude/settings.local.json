@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(for file:*)",
+      "Bash(do)",
+      "Bash(echo \"=== $file ===\")",
+      "Read(//c/Users/PC/Desktop/프로젝트/금융관련 프로젝트/**)",
+      "Bash(done)",
+      "Bash(python3 -c \":*)",
+      "Bash(python3:*)",
+      "Bash(mkdir -p \"C:/Users/PC/Desktop/프로젝트/금융관련 프로젝트/frontend\")",
+      "Bash(mkdir -p \"C:/Users/PC/Desktop/프로젝트/금융관련 프로젝트/backend\")",
+      "Bash(npm --version)",
+      "Bash(npx create-next-app@latest frontend --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-turbopack)",
+      "Bash(npx create-next-app@latest frontend --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-turbopack --yes)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(npx next:*)",
+      "Bash(NEXT_TURBOPACK=0 npx next build)",
+      "Bash(dir /b)",
+      "Bash(findstr -i \"venv env .venv\")",
+      "Bash(py -3.11 send_test_email.py)",
+      "Bash(\"c:\\\\Users\\\\PC\\\\Desktop\\\\프로젝트\\\\금융관련 프로젝트\\\\backend\\\\.env\":*)",
+      "Bash(\"c:\\\\Users\\\\PC\\\\Desktop\\\\프로젝트\\\\금융관련 프로젝트\\\\frontend\\\\.env.local\":*)"
+    ]
+  }
+}
