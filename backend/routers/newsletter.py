@@ -9,10 +9,17 @@ from supabase import create_client
 
 router = APIRouter()
 client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-_supabase = create_client(
-    os.getenv("SUPABASE_URL", ""),
-    os.getenv("SUPABASE_SERVICE_KEY", "")
-)
+
+_supabase = None
+
+def _get_supabase():
+    global _supabase
+    if _supabase is None:
+        url = os.getenv("SUPABASE_URL", "")
+        key = os.getenv("SUPABASE_SERVICE_KEY", "")
+        if url and key:
+            _supabase = create_client(url, key)
+    return _supabase
 
 RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
 FROM_EMAIL = os.getenv("NEWSLETTER_FROM_EMAIL", "newsletter@finedu.kr")
@@ -29,7 +36,7 @@ class SubscribeRequest(BaseModel):
 async def subscribe(req: SubscribeRequest):
     """뉴스레터 구독 신청"""
     try:
-        _supabase.table("newsletter_subscribers").upsert(
+        _get_supabase().table("newsletter_subscribers").upsert(
             {"email": req.email, "active": True},
             on_conflict="email"
         ).execute()
@@ -41,7 +48,7 @@ async def subscribe(req: SubscribeRequest):
 @router.post("/unsubscribe")
 async def unsubscribe(req: SubscribeRequest):
     """뉴스레터 수신 거부"""
-    _supabase.table("newsletter_subscribers").update(
+    _get_supabase().table("newsletter_subscribers").update(
         {"active": False}
     ).eq("email", req.email).execute()
     return {"success": True}
@@ -132,7 +139,7 @@ async def _send_newsletter_background():
 </html>"""
 
     # 활성 구독자 목록
-    result = _supabase.table("newsletter_subscribers").select("email").eq("active", True).execute()
+    result = _get_supabase().table("newsletter_subscribers").select("email").eq("active", True).execute()
     subscribers = result.data or []
 
     # Resend API로 발송

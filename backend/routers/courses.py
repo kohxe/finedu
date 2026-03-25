@@ -12,11 +12,17 @@ from supabase import create_client
 router = APIRouter()
 client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
-# Supabase 클라이언트 (JWT 검증용)
-_supabase = create_client(
-    os.getenv("SUPABASE_URL", ""),
-    os.getenv("SUPABASE_SERVICE_KEY", "")
-)
+# Supabase 클라이언트 — lazy 초기화 (환경변수 없어도 서버 시작 가능)
+_supabase = None
+
+def _get_supabase():
+    global _supabase
+    if _supabase is None:
+        url = os.getenv("SUPABASE_URL", "")
+        key = os.getenv("SUPABASE_SERVICE_KEY", "")
+        if url and key:
+            _supabase = create_client(url, key)
+    return _supabase
 
 # 인메모리 캐시 - 서버 재시작 전까지 유지
 _lesson_cache: dict[str, str] = {}
@@ -337,7 +343,10 @@ async def _require_auth_if_premium(course_title: str, lesson_title: str, authori
         raise HTTPException(status_code=401, detail="PRO 레슨은 로그인이 필요합니다.")
     token = authorization.split(" ", 1)[1]
     try:
-        user_resp = _supabase.auth.get_user(token)
+        sb = _get_supabase()
+        if not sb:
+            raise HTTPException(status_code=503, detail="인증 서비스 초기화 중입니다.")
+        user_resp = sb.auth.get_user(token)
         if not user_resp.user:
             raise HTTPException(status_code=401, detail="유효하지 않은 인증 토큰입니다.")
     except HTTPException:
