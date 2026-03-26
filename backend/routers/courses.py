@@ -8,6 +8,7 @@ import json
 import re
 from datetime import date as _date
 from supabase import create_client
+from cache import cache_get, cache_set
 
 router = APIRouter()
 client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
@@ -438,9 +439,17 @@ async def get_lesson_content(req: QuizRequest, authorization: Optional[str] = He
     cache_key = f"{req.course_title}::{req.lesson_title}"
 
     # 캐시 히트: 전체 텍스트를 한 번에 스트리밍
-    if cache_key in _lesson_cache:
+    cached_text = _lesson_cache.get(cache_key)
+    if not cached_text:
+        db_cached = cache_get(f"lesson:{cache_key}")
+        if db_cached:
+            cached_text = db_cached.get("content", "")
+            if cached_text:
+                _lesson_cache[cache_key] = cached_text
+
+    if cached_text:
         async def cached_stream():
-            yield f"data: {json.dumps({'text': _lesson_cache[cache_key]})}\n\n"
+            yield f"data: {json.dumps({'text': cached_text})}\n\n"
             yield f"data: {json.dumps({'done': True})}\n\n"
         return StreamingResponse(cached_stream(), media_type="text/event-stream",
                                  headers={"X-Accel-Buffering": "no", "Cache-Control": "no-cache"})
@@ -461,6 +470,7 @@ async def get_lesson_content(req: QuizRequest, authorization: Optional[str] = He
                 full_text += text
                 yield f"data: {json.dumps({'text': text})}\n\n"
         _lesson_cache[cache_key] = full_text
+        cache_set(f"lesson:{cache_key}", {"content": full_text})
         yield f"data: {json.dumps({'done': True})}\n\n"
 
     return StreamingResponse(stream(), media_type="text/event-stream",
@@ -472,6 +482,11 @@ async def generate_quiz(req: QuizRequest):
     cache_key = f"{req.course_title}::{req.lesson_title}"
     if cache_key in _quiz_cache:
         return _quiz_cache[cache_key]
+
+    db_cached = cache_get(f"quiz:{cache_key}")
+    if db_cached:
+        _quiz_cache[cache_key] = db_cached
+        return db_cached
 
     message = client.messages.create(
         model="claude-haiku-4-5-20251001",
@@ -508,6 +523,7 @@ answer는 0~3 인덱스. 난이도는 중간 수준으로.""",
         quiz_data = {"questions": []}
 
     _quiz_cache[cache_key] = quiz_data
+    cache_set(f"quiz:{cache_key}", quiz_data)
     return quiz_data
 
 
@@ -550,6 +566,13 @@ async def get_lesson_diagram(req: QuizRequest):
     if cache_key in _diagram_cache:
         return {"svg": _diagram_cache[cache_key], "cached": True}
 
+    db_cached = cache_get(cache_key)
+    if db_cached:
+        svg = db_cached.get("svg", "")
+        if svg:
+            _diagram_cache[cache_key] = svg
+            return {"svg": svg, "cached": True}
+
     prompt = f"""'{req.lesson_title}' 금융 개념을 설명하는 SVG 다이어그램을 만들어줘.
 
 조건:
@@ -574,6 +597,7 @@ async def get_lesson_diagram(req: QuizRequest):
 
     if svg:
         _diagram_cache[cache_key] = svg
+        cache_set(cache_key, {"svg": svg})
     return {"svg": svg, "cached": False}
 
 
@@ -583,6 +607,11 @@ async def get_daily_quiz():
     today = str(_date.today())
     if today in _daily_quiz_cache:
         return _daily_quiz_cache[today]
+
+    db_cached = cache_get(f"daily_quiz:{today}")
+    if db_cached:
+        _daily_quiz_cache[today] = db_cached
+        return db_cached
 
     day_of_year = _date.today().timetuple().tm_yday
     topic = DAILY_QUIZ_TOPICS[day_of_year % len(DAILY_QUIZ_TOPICS)]
@@ -616,4 +645,5 @@ answer는 0~3 인덱스."""
         quiz_data = {"topic": topic, "question": "", "options": [], "answer": 0, "explanation": ""}
 
     _daily_quiz_cache[today] = quiz_data
+    cache_set(f"daily_quiz:{today}", quiz_data)
     return quiz_data

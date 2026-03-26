@@ -4,6 +4,7 @@ import anthropic
 import os
 import random
 from datetime import date
+from cache import cache_get, cache_set
 
 router = APIRouter()
 client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
@@ -51,6 +52,12 @@ async def get_daily_insight():
     if today in _daily_cache:
         return _daily_cache[today]
 
+    db_key = f"insight:daily:{today}"
+    db_cached = cache_get(db_key)
+    if db_cached:
+        _daily_cache[today] = db_cached
+        return db_cached
+
     topic = random.choice(INSIGHT_TOPICS)
 
     message = client.messages.create(
@@ -69,6 +76,7 @@ async def get_daily_insight():
                   "oneliner": "오늘의 금융 인사이트", "body": text, "takeaway": "", "tag": topic["tag"]}
 
     _daily_cache[today] = result
+    cache_set(db_key, result)
     return result
 
 
@@ -83,6 +91,12 @@ class TopicRequest(BaseModel):
 async def get_topic_insight(req: TopicRequest):
     if req.title in _topic_cache:
         return _topic_cache[req.title]
+
+    db_key = f"insight:topic:{req.title}"
+    db_cached = cache_get(db_key)
+    if db_cached:
+        _topic_cache[req.title] = db_cached
+        return db_cached
 
     message = client.messages.create(
         model="claude-haiku-4-5-20251001",
@@ -100,4 +114,5 @@ async def get_topic_insight(req: TopicRequest):
                   "oneliner": "", "body": text, "takeaway": "", "tag": req.tag}
 
     _topic_cache[req.title] = result
+    cache_set(db_key, result)
     return result

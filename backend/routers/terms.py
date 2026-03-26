@@ -3,6 +3,7 @@ from pydantic import BaseModel
 import anthropic
 import os
 import json
+from cache import cache_get, cache_set
 
 router = APIRouter()
 client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
@@ -127,6 +128,11 @@ async def explain_term(req: TermExplainRequest):
     if cache_key in _term_cache:
         return _term_cache[cache_key]
 
+    db_cached = cache_get(cache_key)
+    if db_cached:
+        _term_cache[cache_key] = db_cached
+        return db_cached
+
     level_text = {"beginner": "완전 초보자", "intermediate": "어느 정도 아는 사람", "advanced": "전문 투자자"}.get(req.level, "초보자")
 
     message = client.messages.create(
@@ -169,6 +175,7 @@ async def explain_term(req: TermExplainRequest):
 
     result = {"term": req.term, "category": req.category, "level": req.level, **parsed}
     _term_cache[cache_key] = result
+    cache_set(cache_key, result)
     return result
 
 
