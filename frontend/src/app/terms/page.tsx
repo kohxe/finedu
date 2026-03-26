@@ -83,7 +83,7 @@ export default function TermsPage() {
 
   async function explainTerm(term: string, catId: string) {
     setLoading(true);
-    setModal({ term, category: catId, explanation: "" });
+    setModal({ term, category: catId });
     try {
       const res = await fetch(`${API_URL}/api/terms/explain`, {
         method: "POST",
