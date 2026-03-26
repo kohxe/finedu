@@ -90,6 +90,7 @@ export default function TermsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ term, category: catId, level }),
       });
+      if (!res.ok) throw new Error("서버 오류");
       const data = await res.json();
       setModal({
         term,
