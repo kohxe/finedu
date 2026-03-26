@@ -300,21 +300,26 @@ JSON 형식으로만 답해줘 (마크다운 없이 순수 JSON):
     }
 
     prompt = level_prompts.get(req.level, level_prompts["beginner"])
+    max_tokens = {"beginner": 1024, "intermediate": 1536, "advanced": 2048}.get(req.level, 1024)
 
     message = client.messages.create(
         model="claude-haiku-4-5-20251001",
-        max_tokens=1024,
+        max_tokens=max_tokens,
         messages=[{"role": "user", "content": prompt}],
     )
 
     import re
     text = message.content[0].text
     json_match = re.search(r'\{.*\}', text, re.DOTALL)
+    parsed = None
     if json_match:
-        parsed = json.loads(json_match.group())
-    else:
+        try:
+            parsed = json.loads(json_match.group())
+        except json.JSONDecodeError:
+            pass
+    if not parsed:
         parsed = {
-            "definition": text,
+            "definition": "내용을 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.",
             "analogy": "",
             "why_important": "",
             "key_points": [],
