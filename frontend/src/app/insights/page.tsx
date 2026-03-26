@@ -15,7 +15,7 @@ const TAG_COLORS: Record<string, string> = {
 };
 
 type Topic = { title: string; subtitle: string; emoji: string; tag: string };
-type Insight = Topic & { oneliner: string; body: string; takeaway: string };
+type Insight = Topic & { oneliner: string; body: string; takeaway: string; hidden_truth?: string };
 
 export default function InsightsPage() {
   const [topics, setTopics] = useState<Topic[]>([]);
@@ -94,10 +94,16 @@ export default function InsightsPage() {
                 <p className="text-blue-300 font-semibold text-lg mb-3 italic">"{daily.oneliner}"</p>
               )}
               <p className="text-slate-300 leading-relaxed mb-4">{daily.body}</p>
+              {(daily as Insight).hidden_truth && (
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3 flex gap-2 mb-3">
+                  <span className="text-amber-400 shrink-0">🔍</span>
+                  <p className="text-amber-300 text-sm"><span className="font-semibold">대부분 모르는 사실: </span>{(daily as Insight).hidden_truth}</p>
+                </div>
+              )}
               {daily.takeaway && (
                 <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl px-4 py-3 flex gap-2">
                   <Lightbulb className="text-blue-400 shrink-0 mt-0.5" size={16} />
-                  <p className="text-blue-300 text-sm">{daily.takeaway}</p>
+                  <p className="text-blue-300 text-sm"><span className="font-semibold">오늘의 실천: </span>{daily.takeaway}</p>
                 </div>
               )}
             </div>
@@ -160,13 +166,19 @@ export default function InsightsPage() {
               ) : (
                 <div className="space-y-4">
                   {modal.oneliner && (
-                    <p className="text-blue-300 font-semibold italic">"{modal.oneliner}"</p>
+                    <p className="text-blue-300 font-semibold italic text-base">"{modal.oneliner}"</p>
                   )}
                   <p className="text-slate-300 text-sm leading-relaxed">{modal.body}</p>
+                  {modal.hidden_truth && (
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3 flex gap-2">
+                      <span className="text-amber-400 shrink-0">🔍</span>
+                      <p className="text-amber-300 text-sm"><span className="font-semibold">대부분 모르는 사실: </span>{modal.hidden_truth}</p>
+                    </div>
+                  )}
                   {modal.takeaway && (
                     <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl px-4 py-3 flex gap-2">
                       <Lightbulb className="text-blue-400 shrink-0 mt-0.5" size={15} />
-                      <p className="text-blue-300 text-sm">{modal.takeaway}</p>
+                      <p className="text-blue-300 text-sm"><span className="font-semibold">오늘의 실천: </span>{modal.takeaway}</p>
                     </div>
                   )}
                 </div>
