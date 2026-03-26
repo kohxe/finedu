@@ -12,6 +12,8 @@ const TAG_COLORS: Record<string, string> = {
   금리: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
   환율: "bg-orange-500/20 text-orange-300 border-orange-500/30",
   투자전략: "bg-pink-500/20 text-pink-300 border-pink-500/30",
+  재무: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
+  차트: "bg-amber-500/20 text-amber-300 border-amber-500/30",
 };
 
 type Topic = { title: string; subtitle: string; emoji: string; tag: string };

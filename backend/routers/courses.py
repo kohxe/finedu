@@ -323,6 +323,39 @@ COURSES = [
             {"id": 6, "title": "나만의 투자 원칙 만들기 — 흔들리지 않는 기준", "premium": True},
         ],
     },
+    # ── 캔들 & 재무제표 ──────────────────────────────────────────
+    {
+        "id": "candle-patterns",
+        "title": "캔들 패턴 완전정복",
+        "description": "도지부터 샛별까지 — 캔들 모양으로 시장 심리 읽기",
+        "level": "beginner",
+        "category": "trading",
+        "premium": False,
+        "lessons": [
+            {"id": 1, "title": "캔들 기본 — 몸통·꼬리·색이 말하는 것", "premium": False},
+            {"id": 2, "title": "단일 캔들 패턴 — 도지·망치·유성형", "premium": False},
+            {"id": 3, "title": "2개 캔들 패턴 — 장악형·관통형·하라미", "premium": False},
+            {"id": 4, "title": "3개 캔들 패턴 — 샛별·저녁별·적삼병·흑삼병", "premium": True},
+            {"id": 5, "title": "캔들 패턴의 한계 — 승률과 필터 조건", "premium": True},
+            {"id": 6, "title": "실전 적용 — 캔들 패턴 + 거래량 + 지지저항 조합", "premium": True},
+        ],
+    },
+    {
+        "id": "financial-statements-quick",
+        "title": "재무제표 처음 읽기",
+        "description": "숫자 몰라도 괜찮아 — 투자 전 꼭 확인할 핵심 지표만 쏙쏙",
+        "level": "beginner",
+        "category": "fundamental",
+        "premium": False,
+        "lessons": [
+            {"id": 1, "title": "재무제표가 뭐야? — 기업의 성적표 이해하기", "premium": False},
+            {"id": 2, "title": "영업이익 vs 순이익 — 진짜 버는 돈은 어느 것?", "premium": False},
+            {"id": 3, "title": "현금흐름표 — 이게 거짓말을 안 한다", "premium": False},
+            {"id": 4, "title": "부채비율·유동비율 — 이 기업 망하지 않을까?", "premium": True},
+            {"id": 5, "title": "분식회계 의심 신호 — 숫자의 거짓말 잡아내기", "premium": True},
+            {"id": 6, "title": "재무비율 한 번에 정리 — ROE·PBR·FCF 실전 활용", "premium": True},
+        ],
+    },
     # ── 테마주·섹터 ───────────────────────────────────────────────
     {
         "id": "theme-sector",
