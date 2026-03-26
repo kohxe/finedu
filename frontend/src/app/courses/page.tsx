@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Brain, Lock, ChevronRight, CheckCircle, BookOpen, Loader2, X, Send, MessageCircle, Zap, Crown } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
@@ -759,8 +760,14 @@ export default function CoursesPage() {
                   <p className="text-slate-400 text-sm">AI가 설명을 작성하고 있습니다...</p>
                 </div>
               ) : (
-                <div className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
-                  {content}
+                <div className="prose prose-invert prose-sm max-w-none text-slate-300
+                  prose-headings:text-white prose-headings:font-bold prose-headings:mt-5 prose-headings:mb-2
+                  prose-h2:text-base prose-h2:border-b prose-h2:border-slate-700 prose-h2:pb-1
+                  prose-p:leading-relaxed prose-p:text-slate-300
+                  prose-strong:text-white prose-strong:font-semibold
+                  prose-ul:space-y-1 prose-li:text-slate-300 prose-li:marker:text-blue-400
+                  prose-blockquote:border-blue-500 prose-blockquote:text-slate-400 prose-blockquote:bg-blue-500/5 prose-blockquote:rounded-r-lg prose-blockquote:py-1">
+                  <ReactMarkdown>{content}</ReactMarkdown>
                   {loadingContent && (
                     <span className="inline-block w-0.5 h-4 bg-purple-400 animate-pulse ml-0.5 align-middle" />
                   )}
