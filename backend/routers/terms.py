@@ -2,9 +2,11 @@ from fastapi import APIRouter, Query
 from pydantic import BaseModel
 import anthropic
 import os
+import json
 
 router = APIRouter()
 client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+_term_cache: dict[str, dict] = {}
 
 CATEGORIES = {
     "stock": "주식",
@@ -121,33 +123,47 @@ def get_categories():
 
 @router.post("/explain")
 async def explain_term(req: TermExplainRequest):
+    cache_key = f"{req.term}:{req.level}"
+    if cache_key in _term_cache:
+        return _term_cache[cache_key]
+
     level_text = {"beginner": "완전 초보자", "intermediate": "어느 정도 아는 사람", "advanced": "전문 투자자"}.get(req.level, "초보자")
 
     message = client.messages.create(
-        model="claude-opus-4-6",
+        model="claude-haiku-4-5-20251001",
         max_tokens=1024,
         messages=[
             {
                 "role": "user",
                 "content": f"""금융 용어 '{req.term}'을 {level_text}에게 설명해줘.
 
-다음 형식으로 답해줘:
-1. 한 줄 정의 (쉽고 간결하게)
-2. 쉬운 예시 (실생활 비유 포함)
-3. 투자에서 왜 중요한가 (2~3문장)
-4. 핵심 포인트 (불릿 3개)
+반드시 아래 JSON 형식으로만 답해줘. 마크다운이나 다른 텍스트 없이 순수 JSON만:
 
-말투는 친근하고 쉽게, 전문용어는 최소화해줘.""",
+{{
+  "definition": "한 줄 정의 (쉽고 간결하게, 1문장)",
+  "analogy": "실생활 비유로 쉽게 설명 (2~3문장, 친근한 말투)",
+  "why_important": "투자에서 왜 중요한지 (2문장)",
+  "key_points": ["핵심 포인트 1", "핵심 포인트 2", "핵심 포인트 3"],
+  "quick_tip": "오늘 바로 써먹을 수 있는 한 줄 팁"
+}}""",
             }
         ],
     )
 
-    return {
-        "term": req.term,
-        "category": req.category,
-        "level": req.level,
-        "explanation": message.content[0].text,
-    }
+    try:
+        parsed = json.loads(message.content[0].text)
+    except json.JSONDecodeError:
+        parsed = {
+            "definition": message.content[0].text,
+            "analogy": "",
+            "why_important": "",
+            "key_points": [],
+            "quick_tip": "",
+        }
+
+    result = {"term": req.term, "category": req.category, "level": req.level, **parsed}
+    _term_cache[cache_key] = result
+    return result
 
 
 @router.get("/search")

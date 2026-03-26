@@ -50,7 +50,15 @@ const LEVEL_OPTIONS = [
   { id: "advanced",     label: "🎓 전문가" },
 ];
 
-type TermModal = { term: string; category: string; explanation: string } | null;
+type TermModal = {
+  term: string;
+  category: string;
+  definition?: string;
+  analogy?: string;
+  why_important?: string;
+  key_points?: string[];
+  quick_tip?: string;
+} | null;
 
 export default function TermsPage() {
   const [selectedCategory, setSelectedCategory] = useState("stock");
@@ -83,9 +91,17 @@ export default function TermsPage() {
         body: JSON.stringify({ term, category: catId, level }),
       });
       const data = await res.json();
-      setModal({ term, category: catId, explanation: data.explanation });
+      setModal({
+        term,
+        category: catId,
+        definition: data.definition,
+        analogy: data.analogy,
+        why_important: data.why_important,
+        key_points: data.key_points,
+        quick_tip: data.quick_tip,
+      });
     } catch {
-      setModal({ term, category: catId, explanation: "⚠️ 백엔드 서버가 실행 중인지 확인해주세요." });
+      setModal({ term, category: catId, definition: "⚠️ 백엔드 서버가 실행 중인지 확인해주세요." });
     } finally {
       setLoading(false);
     }
@@ -223,8 +239,53 @@ export default function TermsPage() {
                   <p className="text-slate-400 text-sm">AI가 설명을 작성하고 있어요...</p>
                 </div>
               ) : (
-                <div className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
-                  {modal.explanation}
+                <div className="space-y-4">
+                  {/* 한 줄 정의 */}
+                  {modal.definition && (
+                    <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
+                      <p className="text-[11px] text-blue-400 font-semibold uppercase tracking-wide mb-1.5">📌 한 줄 정의</p>
+                      <p className="text-white font-semibold text-base leading-snug">{modal.definition}</p>
+                    </div>
+                  )}
+
+                  {/* 쉽게 말하면 */}
+                  {modal.analogy && (
+                    <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-4">
+                      <p className="text-[11px] text-purple-400 font-semibold uppercase tracking-wide mb-1.5">💡 쉽게 말하면</p>
+                      <p className="text-slate-300 text-sm leading-relaxed">{modal.analogy}</p>
+                    </div>
+                  )}
+
+                  {/* 왜 중요한가 */}
+                  {modal.why_important && (
+                    <div>
+                      <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wide mb-2">📊 투자에서 왜 중요한가</p>
+                      <p className="text-slate-300 text-sm leading-relaxed">{modal.why_important}</p>
+                    </div>
+                  )}
+
+                  {/* 핵심 포인트 */}
+                  {modal.key_points && modal.key_points.length > 0 && (
+                    <div className="bg-[#0d1323] rounded-xl p-4 border border-slate-800">
+                      <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wide mb-3">✅ 핵심 포인트</p>
+                      <ul className="space-y-2">
+                        {modal.key_points.map((pt, i) => (
+                          <li key={i} className="flex items-start gap-2.5 text-sm text-slate-300">
+                            <span className="text-green-400 font-bold mt-0.5 shrink-0">{i + 1}</span>
+                            <span>{pt}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* 오늘의 팁 */}
+                  {modal.quick_tip && (
+                    <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl px-4 py-3 flex gap-2.5 items-start">
+                      <span className="text-base shrink-0">⚡</span>
+                      <p className="text-yellow-300 text-sm leading-relaxed">{modal.quick_tip}</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
