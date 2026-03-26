@@ -11,7 +11,10 @@ def _get_sb():
         url = os.getenv("SUPABASE_URL", "")
         key = os.getenv("SUPABASE_SERVICE_KEY", "")
         if url and key:
-            _supabase = create_client(url, key)
+            try:
+                _supabase = create_client(url, key)
+            except Exception:
+                pass
     return _supabase
 
 
