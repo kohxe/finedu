@@ -151,7 +151,13 @@ async def explain_term(req: TermExplainRequest):
     )
 
     try:
-        parsed = json.loads(message.content[0].text)
+        text = message.content[0].text.strip()
+        if text.startswith("```"):
+            text = text.split("```")[1]
+            if text.startswith("json"):
+                text = text[4:]
+            text = text.strip()
+        parsed = json.loads(text)
     except json.JSONDecodeError:
         parsed = {
             "definition": message.content[0].text,
